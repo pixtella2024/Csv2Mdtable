@@ -11,6 +11,7 @@ import csv2mdtable
 class Csv2MdtableGuiClass:
     input_file_name: StringVar
     output_file_name: StringVar
+    encoding_val: IntVar
     align_flag: StringVar
 
     def __init__(self) -> None:
@@ -24,6 +25,7 @@ class Csv2MdtableGuiClass:
 
         self.input_file_name = StringVar()
         self.output_file_name = StringVar()
+        self.encoding_val = IntVar()
         self.align_flag = StringVar()
 
         label_input_file = ttk.Label(frame_setting, text="入力ファイル", padding=(5, 2))
@@ -57,14 +59,38 @@ class Csv2MdtableGuiClass:
         )
         button_output_file_dialog.grid(row=1, column=2)
 
+        label_check_align = ttk.Label(frame_setting, text="文字コード", padding=(5, 2))
+        label_check_align.grid(row=2, column=0, sticky=E)
+
+        frame_encoding = ttk.Frame(frame_setting)
+        frame_encoding.grid(row=2, column=1, sticky=W)
+
+        self.encoding_val.set(0)
+        radio_encoding_utf8 = ttk.Radiobutton(
+            frame_encoding,
+            text="UTF-8",
+            value=0,
+            variable=self.encoding_val,
+            padding=(5, 2),
+        )
+        radio_encoding_utf8.pack(side=LEFT)
+        radio_encoding_sjis = ttk.Radiobutton(
+            frame_encoding,
+            text="Shift_JIS",
+            value=1,
+            variable=self.encoding_val,
+            padding=(5, 2),
+        )
+        radio_encoding_sjis.pack(side=LEFT)
+
         label_check_align = ttk.Label(
             frame_setting, text="アライメント", padding=(5, 2)
         )
-        label_check_align.grid(row=2, column=0, sticky=E)
+        label_check_align.grid(row=3, column=0, sticky=E)
 
         self.align_flag.set("1")
         check_align_flag = ttk.Checkbutton(frame_setting, variable=self.align_flag)
-        check_align_flag.grid(row=2, column=1, sticky=W)
+        check_align_flag.grid(row=3, column=1, sticky=W)
 
         frame_button = ttk.Frame(frame_main, padding=(0, 5))
         frame_button.pack(side=RIGHT)
@@ -90,12 +116,15 @@ class Csv2MdtableGuiClass:
             return
         align_flag = self.align_flag.get() == "1"
         ret = csv2mdtable.Csv2Mdtable(
-            str_input_file_name, str_output_file_name, align_flag
+            str_input_file_name,
+            str_output_file_name,
+            self.encoding_val.get(),
+            align_flag,
         )
-        if ret:
+        if ret == 0:
             messagebox.showinfo("完了", "出力に成功しました")
         else:
-            messagebox.showerror("エラー", "出力に失敗しました")
+            messagebox.showerror("エラー", csv2mdtable.GetErrorMessage(ret))
 
     def input_file_dialog(self):
         file_type = [("CSVファイル", "*.csv")]
